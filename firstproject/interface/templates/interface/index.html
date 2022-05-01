@@ -1,0 +1,19 @@
+<h1> VIEW </h1>
+
+<li><a href={% url 'interface:teste' %}> Lista banco </a></li>
+
+
+{% if interface_list %}
+    <ul>
+    {% for interface in interface_list %}
+        {{ interface }}
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+
+
+<li><a href={% url 'interface:print_function' %}> Do it </a></li>
+
+
