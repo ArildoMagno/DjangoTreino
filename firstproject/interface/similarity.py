@@ -22,6 +22,14 @@ class Similarity:
             return constants.SYNONYMGROUPNOTFOUND
         return value_similarity
 
+    class Sentence:
+        percentage_doc1_doc2 = None
+        percentage_doc2_doc1 = None
+        sentence_doc1 = None
+        sentence_trated_doc1 = None
+        sentence_doc2 = None
+        sentence_trated_doc2 = None
+
     def calculate_similar_sets_in_docs(self, doc_segmented1, doc_segmented2):
         # secao 4.3.3 calculo 2015
         qntd_similar_sets = []
@@ -35,7 +43,16 @@ class Similarity:
 
                 if self.sentences_similar_threshold(uAB, uBA):
                     qntd_similar_sets.append(1)
-                    similar_sets_log.append((similar_sets_temp, set1, set2))
+
+                    sentence = self.Sentence()
+                    sentence.sentence_doc1 = set1[0]
+                    sentence.sentence_doc2 = set2[0]
+                    sentence.sentence_trated_doc1 = set1[1]
+                    sentence.sentence_trated_doc2 = set2[1]
+                    sentence.percentage_doc1_doc2 = similar_sets_temp[0]
+                    sentence.percentage_doc2_doc1 = similar_sets_temp[1]
+
+                    similar_sets_log.append(sentence)
 
         return qntd_similar_sets, similar_sets_log
 

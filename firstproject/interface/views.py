@@ -3,11 +3,11 @@ import wn
 from django.http import HttpResponse
 from django.views import generic
 from django.utils import timezone
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Interface, File
 from django.core.files.storage import FileSystemStorage
 import os
-
+from django.template import loader
 from interface.textdata import TextManipulation
 from interface.similarity import Similarity
 
@@ -45,18 +45,19 @@ def print_function(request):
     return HttpResponse(calc)
 
 
+def get_content(request):
+    print(result_analyse)
+    return HttpResponse('')
+
+
 # Printa o dir atual
-directory = os.getcwd()
-print("DIRETORIO:", directory)
+# directory = os.getcwd()
+# print("DIRETORIO:", directory)
 
 # configure: adicionando o banco local
 wn.config.data_directory = 'wn_data'
 
 
-# 1- CONSEGUI CHAMAR O BANCO COM O WN ARRUMANDO  O LOCAL JA
-# 2- CONSEGUI CRIAR FUNCOES E MANIPULAR ELAS
-
-# WN funcionou, aqui chamou meu banco db
 def func2():
     synset1 = wn.synsets("cavalo")
     print("teste wn:", synset1[1])
@@ -66,7 +67,21 @@ def func2():
 
 
 # CONSEGUI ENVIAR OS ARQUIVOS TXT
+result_analyse = []
+
+
+# This a Analyse object
+class Analyse:
+    name_file1 = None
+    name_file2 = None
+    similar_sets_log1 = None
+    similar_sets_log2 = None
+    percent_plagiarism = None
+
+
 def upload(request):
+    data = {}
+
     # Aí se ele receber uma requisicao tipo POST faz o metodo
     # caso contrario apenas uma GET nao executa
     if request.method == 'POST':
@@ -76,25 +91,34 @@ def upload(request):
         doc2_name = uploaded_file2.name
         doc1 = ""
         doc2 = ""
+        # No momento lendo o conteudo dos arquivo online (Dps ver se vou salva-los e ler dos arquivos salvos)
         for i in uploaded_file:
-            doc1 = i.decode("utf-8")
+            doc1 += i.decode("utf-8") + " "
 
         for j in uploaded_file2:
-            doc2 = j.decode("utf-8")
+            doc2 += j.decode("utf-8") + " "
 
-        print(analyse_docs(doc1_name, doc2_name, doc1, doc2))
+        doc1 = doc1[:-1]
+        doc2 = doc2[:-1]
+
+        result_analyse.append(analyse_docs(doc1_name, doc2_name, doc1, doc2))
+
+        data['result_analyse'] = result_analyse
+
+        return render(request, 'interface\\resultlog.html', data)
 
     # fs = FileSystemStorage()
     # fs.save(uploaded_file.name, uploaded_file)
+    # pelo render da para passar o context, (clica p exibir a funcao ai que vai aparecer)
+    # terceiro argumento, vou testar isso ainda, para eu renderizar e mandar p la se pa
+
     return render(request, 'interface\\upload.html')
-    # return HttpResponse("OK")
 
 
 # REPLICANDO AS FUNÇÕES DE MANEIRA FEIA E NAO MODULARIZADA:
 
 
 def analyse_docs(file_name1, file_name2, doc1, doc2):
-    print("\nAnalisando docs:", file_name1, file_name2)
     text_manipulation = TextManipulation()
     similarity = Similarity()
 
@@ -112,4 +136,13 @@ def analyse_docs(file_name1, file_name2, doc1, doc2):
 
     percent_plagiarism = similarity.odds_ratio_in_percent(degree_resemblance1, degree_resemblance2)
 
-    return (file_name1, file_name2, similar_sets_log1, similar_sets_log2, percent_plagiarism)
+    analyse = Analyse()
+    analyse.name_file1 = file_name1
+    analyse.name_file2 = file_name2
+    analyse.similar_sets_log1 = similar_sets_log1
+    analyse.similar_sets_log2 = similar_sets_log2
+    analyse.percent_plagiarism = percent_plagiarism
+
+    return analyse
+    # retornando so o nome dos arquvios e a porcentagem
+    # return (file_name1, file_name2, percent_plagiarism)

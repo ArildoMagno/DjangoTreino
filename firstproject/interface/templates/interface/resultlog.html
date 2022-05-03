@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h1> Resultado: </h1>
+
+{% if result_analyse %}
+    <ul>
+        {% for result in result_analyse %}
+            <h2>Arquivos: {{ result.name_file1 }} , {{ result.name_file2 }}</h2>
+            <h2>Porcentagem de Plagio: {{ result.percent_plagiarism }}</h2>
+            <h3>Log Sentenças:<br></h3>
+            {% for sentence in result.similar_sets_log1 %}
+                <h4>Sentenca Doc1 em relação a sentenca do Doc2: {{ sentence.percentage_doc1_doc2 }}</h4>
+                <h4>Sentenca Doc2 em relação a sentenca do Doc1: {{ sentence.percentage_doc2_doc1 }}</h4>
+                <h4>Sentenca Doc1: {{ sentence.sentence_doc1 }}</h4>
+                <h4>Sentenca Doc2: {{ sentence.sentence_doc2 }}</h4>
+                <br><br>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No result are available.</p>
+{% endif %}
+
+</body>
+</html>
